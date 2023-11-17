@@ -1,12 +1,12 @@
 include "alldifferent.mzn";
-include "alldifferent_except_0.mzn";
+include "alldifferent_except.mzn";
 include "count_fn.mzn";
 
-% Constants
-% # of couriers
+% Instance parameters
+% Number of couriers
 int: m;
 
-% # of items
+% Number of items
 int: n;
 
 % Assert for number of items >= number of couriers - from problem requirements
@@ -21,7 +21,7 @@ set of int: ITEMS = 1..n;
 array[ITEMS] of int: s;
 
 % Assert for couriers to have the capacity to carry all items
-constraint assert(sum(l) >= sum(s), "Unsolvable - total weight of items is larger than total capacity of couriers.");
+constraint assert(sum(l) >= sum(s), "Unsolvable - total size of items is larger than total capacity of couriers.");
 
 % Distances
 set of int: LOCATIONS = 1..n+1;
@@ -38,19 +38,11 @@ array[COURIERS] of var 0..max(l): actual_load;
 
 % Precedence variable (for item ordering)
 % pre[i] = j means that item i gets delivered immediately after item j
+% or that the precedent of item i is j
 array[ITEMS] of var 1..n+1: pre;
 
 % Variable to store item carried by each courier
 array[COURIERS, ITEMS] of var 0..1: item_assignment;
-
-% Variable to store distance needed to deliver item, based on precedence
-array[ITEMS] of var 0..max(D): item_d;
-
-% Variable to store all items that precede another item
-array[ITEMS] of var 0..1: has_next;
-
-% Variable to store leftover distance (from last item of all couriers to origin)
-var 0..sum(D): leftover_dist;
 
 % Variable to store total distance
 var 0..sum(D): total_dist;
@@ -58,12 +50,14 @@ var 0..sum(D): total_dist;
 
 
 % Constraints
-% Constraint to mark with 1 items carried by courier in item_assignment matrix
+
+% Item assignment
+% Mark with 1 items carried by courier in item_assignment matrix
 constraint forall(it in ITEMS) (
   item_assignment[courier_assignment[it], it] == 1
 );
 
-% Constraint for all other values to be 0 in the item_assignment matrix s.t. assigned to exactly one courier
+% Mark with 0 all other values
 constraint forall(it in ITEMS) (
   sum(co in COURIERS)(item_assignment[co, it]) == 1
 );
@@ -80,10 +74,8 @@ constraint forall(co in COURIERS) (
 );
 
 % Since only one item is delivered at a time, there are no 2 items delivered immediately after another one
-% So no 2 items should have the same precedent item (unless 0, which means it's the first item being taken
-%   and previous point was the origin
-% Maybe not needed anymore because below plus origin is not 0, but last i
-% constraint alldifferent_except_0(pre);
+% So no 2 items should have the same precedent item, unless coming from origin
+constraint alldifferent_except(pre, {n + 1});
 
 % Tighter constraint for alldifferent in same courier
 constraint forall(co in COURIERS)(
@@ -109,31 +101,7 @@ constraint forall(it in ITEMS where pre[it] < (n + 1)) (
 % (since alldifferent, it will be included exactly once for each of them)
 constraint count(pre, (n + 1), m);
 
-% Precedence for each courier to include base once
-%constraint forall(co in COURIERS) ( 
-% );
-
-%add column for base
-%make it always 1
-%make it such that precedence can not be itself
-
-% Compute distances for each item
-constraint forall(it in ITEMS) (
-  item_d[it] = D[pre[it], it]
-);
-
-% Mark with 1 all items that have a predecesor
-constraint forall(it in ITEMS where pre[it] < (n + 1)) (
-  has_next[pre[it]] = 1
-);
-
-% Make sure that all other are 0
-constraint count(has_next, 1, (n - m));
-
-% Compute distances from last drop point to origin
-constraint sum(it in ITEMS where has_next[it] == 0) (D[it, (n + 1)]) == leftover_dist;
-
 % Compute total distance
-constraint (sum(it in ITEMS) (item_d[it]) + leftover_dist) == total_dist;
+constraint total_dist = (sum(it in ITEMS) (D[pre[it], it]) + sum(it in ITEMS where count(pre, it, 0)) (D[it, (n + 1)]));
 
 solve minimize total_dist;
