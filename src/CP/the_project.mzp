@@ -1,0 +1,18 @@
+{
+    "openFiles": [
+        "the_problem.mzn",
+        "the_data.dzn",
+        "../mzn_e2/Cumulative scheduling/Data4.dzn",
+        "../mzn_e2/Cumulative scheduling/rcpsp.mzn"
+    ],
+    "openTab": 0,
+    "projectFiles": [
+        "the_data.dzn",
+        "the_problem.mzn",
+        "../mzn_e2/Cumulative scheduling/Data4.dzn",
+        "../mzn_e2/Cumulative scheduling/rcpsp.mzn"
+    ],
+    "selectedBuiltinConfigId": "org.gecode.gecode",
+    "selectedBuiltinConfigVersion": "6.3.0",
+    "version": 106
+}
