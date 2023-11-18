@@ -1,16 +1,24 @@
-import sys
+import os
 
-from src.io_stream import read_input_file
+from src.io_stream import read_input_file, create_dzn
 
 
 def main():
     """
-    The main function. Required arguments:
-    - string representing the path to the input file, given in the standard format; the path must be relative to the\
-      root of the project
+    The main function.
+
     :return: None
     """
-    problem = read_input_file(sys.argv[1])
+
+    for el in os.listdir("data/problem_instances"):
+        if el.endswith(".dat"):
+            problem = read_input_file("data/problem_instances/" + el)
+            create_dzn(problem, "data/CP/problem_instances/" + el[:-4] + ".dzn")
+
+            print((problem.distances == problem.distances.T).all())
+            print(len(problem.max_loads) != len(set(problem.max_loads)))
+            print(len(problem.sizes) != len(set(problem.sizes)))
+            print()
 
     return None
 
