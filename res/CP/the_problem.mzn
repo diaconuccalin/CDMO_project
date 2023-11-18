@@ -49,7 +49,7 @@ array[ITEMS] of var 1..n+1: sub;
 array[COURIERS, ITEMS] of var 0..1: item_assignment;
 
 % Variable to store total distance
-var 0..sum(D): total_dist;
+var 0..ceil(sum(D) / 2): total_dist;
 % --------------------------------------------------------------------------------------------------------------
 
 
@@ -64,6 +64,11 @@ constraint forall(it in ITEMS) (
 % Mark with 0 all other values
 constraint forall(it in ITEMS) (
   sum(co in COURIERS)(item_assignment[co, it]) == 1
+);
+
+% Also on vertical - no time improvement
+constraint forall(co in COURIERS) (
+  sum(it in ITEMS) (item_assignment[co, it]) == count(courier_assignment, co)
 );
 
 % Maximum capacity of each courier
@@ -84,6 +89,7 @@ constraint forall(it in ITEMS where pre[it] < (n + 1)) (sub[pre[it]] == it);
 
 % Since only one item is delivered at a time, there are no 2 items delivered immediately after another one
 % So no 2 items should have the same precedent item, unless coming from origin
+% No time difference for these 2 (on or off)
 constraint alldifferent_except(pre, {n + 1});
 
 % Same for sub
