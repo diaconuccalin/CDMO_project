@@ -49,7 +49,7 @@ array[ITEMS] of var 1..n+1: pre;
 %array[COURIERS, ITEMS] of var 0..1: item_assignment;
 
 % Varaible for distances in the pre array
-array[ITEMS] of var 1..max(D): pre_dist;
+array[ITEMS] of var min(D)..max(D): pre_dist;
 
 % Variable to store total distance
 var 0..ceil(sum(D) / 2): total_dist;
@@ -153,4 +153,6 @@ constraint count(pre, (n + 1), m);
 % Compute total distance
 constraint total_dist = (sum(it in ITEMS) (D[pre[it], it]) + sum(it in ITEMS where count(pre, it, 0)) (D[it, (n + 1)]));
 
-solve :: int_search(pre_dist, input_order, indomain_min) minimize total_dist;
+solve ::  int_search(pre_dist, smallest, indomain_min)
+      ::  restart_linear(100)
+          minimize total_dist;

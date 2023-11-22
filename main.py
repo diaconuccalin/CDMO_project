@@ -38,23 +38,16 @@ def main():
             data_path = os.path.join(the_dir, el)
 
             p = subprocess.Popen(
-                ['minizinc', '--solver', 'gecode', './res/CP/the_problem.mzn', data_path],
+                ['minizinc', '--solver', 'gecode', './res/CP/the_problem.mzn', data_path, "--time-limit", "20000"],
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
             )
 
-            to = 30
-            output = ""
-
-            try:
-                time_started = time.time()
-                output, _ = p.communicate(timeout=to)
-                time_delta = time.time() - time_started
-            except:
-                p.kill()
-                time_delta = to
+            time_started = time.time()
+            output, _ = p.communicate()
+            time_delta = time.time() - time_started
 
             inst_n = el[-6:-3]
             fout.write(inst_n + " - R: " + output[output.rfind("dist > ") + len("dist > "):output.rfind("]")] + " - T: " + str(time_delta) + "\n")
