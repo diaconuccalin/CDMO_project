@@ -50,7 +50,10 @@ def main():
             time_delta = time.time() - time_started
 
             inst_n = el[-6:-3]
-            fout.write(inst_n + " - R: " + output[output.rfind("dist = ") + len("dist = "):output.rfind(";")] + " - T: " + str(time_delta) + "\n")
+            if "UNKNOWN" in output:
+                fout.write(inst_n + " - R: UNK - T: " + str(time_delta) + "\n")
+            else:
+                fout.write(inst_n + " - R: " + output[output.rfind("dist = ") + len("dist = "):output.rfind(";")] + " - T: " + str(time_delta) + "\n")
 
     return None
 
