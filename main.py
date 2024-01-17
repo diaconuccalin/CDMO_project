@@ -2,7 +2,7 @@ import os
 import subprocess
 import time
 
-from src.io_stream import read_input_file, create_dzn
+from src.io_stream import read_input_file, create_dzn, write_to_json
 
 
 def main():
@@ -54,6 +54,8 @@ def main():
                 fout.write(inst_n + " - R: UNK - T: " + str(time_delta) + "\n")
             else:
                 fout.write(inst_n + " - R: " + output[output.rfind("dist = ") + len("dist = "):output.rfind(";")] + " - T: " + str(time_delta) + "\n")
+
+            write_to_json(output, inst_n, str(max_report + 1), time_delta)
 
     return None
 

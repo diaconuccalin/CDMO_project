@@ -1,3 +1,7 @@
+import json
+import math
+import os
+
 import numpy as np
 
 from src.MCPProblem import MCPProblem
@@ -66,3 +70,60 @@ def create_dzn(problem, file_path):
                 f.write("     " + list_to_print + "\n")
 
     return None
+
+
+def output_to_dict(text, experiment_name, time):
+    to_return = dict()
+
+    if "UNKNOWN" not in text:
+        experiment_results = dict()
+
+        # Write time int
+        if time > 285:
+            time = 300
+        experiment_results["time"] = int(math.floor(time))
+
+        # Write optimal bool
+        if "==========" in text:
+            experiment_results["optimal"] = "true"
+        else:
+            experiment_results["optimal"] = "false"
+
+        # Write total distance int
+        experiment_results["obj"] = int(text[text.rfind("dist = ") + len("dist = "):text.rfind(";")])
+
+        # Write list of item delivery order
+        start_ca_list_idx = text.rfind("courier_assignment = ") + len("courier_assignment = ")
+        courier_assignment = list(
+            map(int, text[start_ca_list_idx:start_ca_list_idx + text[start_ca_list_idx:].find(";")][1:-1].split(', ')))
+
+        start_pre_list_idx = text.rfind("pre = ") + len("pre = ")
+        pre = list(map(int, text[start_pre_list_idx:start_pre_list_idx + text[start_pre_list_idx:]
+                       .find(";")][1:-1].split(', ')))
+
+        courier_assignment = np.array(courier_assignment)
+        pre = np.array(pre)
+
+        sol = list()
+        for i in range(max(courier_assignment)):
+            local_sol = list()
+            current_item = np.argmax(np.logical_and(courier_assignment == (i + 1), pre == max(pre))) + 1
+
+            local_sol.append(int(current_item))
+            while current_item in pre:
+                current_item = np.where(pre == current_item)[0] + 1
+                local_sol.append(int(current_item))
+
+            sol.append(local_sol)
+        experiment_results["sol"] = sol
+
+        to_return[experiment_name] = experiment_results
+
+    return to_return
+
+
+def write_to_json(output_text, instance_number, experiment_name, time):
+    data = output_to_dict(output_text, experiment_name, time)
+
+    with open(os.path.join("jsons", "CP", str(instance_number + "json")), "w") as f:
+        json.dump(data, f)

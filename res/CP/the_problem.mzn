@@ -4,6 +4,8 @@ include "count_fn.mzn";
 include "gecode.mzn";
 include "global_cardinality_low_up.mzn";
 include "bin_packing_capa.mzn";
+include "circuit.mzn";
+include "tree.mzn";
 
 % Instance parameters
 % Number of couriers
@@ -59,11 +61,17 @@ array[ITEMS] of var min(D)..max(D): pre_dist;
 % Slows everything down
 %array[ITEMS1, ITEMS1] of var bool: pre_table;
 
+array[ITEMS] of var 1..n: steps_from_origin;
+
 % Variable to store total distance
 % var 0..ceil(sum(D) / 2): total_dist;
 % n for each item, m to go to base
 %var (n + m) * min(D)..(n + m) * max(D): total_dist;
-var sum([min(row(D, i)) | i in 1..n]) + (m * min(row(D, n+1)))..sum([max(row(D, i)) | i in 1..n]) + (m * max(row(D, n+1))): total_dist;
+%var sum([min(row(D, i)) | i in 1..n]) + (m * min(row(D, n+1)))..sum([max(row(D, i)) | i in 1..n]) + (m * max(row(D, n+1))): total_dist;
+
+array[COURIERS] of var sum([min(row(D, i)) | i in 1..n]) + (m * min(row(D, n+1)))..sum([max(row(D, i)) | i in 1..n]) + (m * max(row(D, n+1))): covered_distances;
+
+var sum([min(row(D, i)) | i in 1..n]) + (m * min(row(D, n+1)))..sum([max(row(D, i)) | i in 1..n]) + (m * max(row(D, n+1))): max_dist;
 
 % --------------------------------------------------------------------------------------------------------------
 
@@ -166,9 +174,23 @@ constraint forall(it in ITEMS) (
 %);
 
 % Precedence - avoid cycles
-constraint forall(it in ITEMS where pre[it] < (n + 1)) (
-  pre[pre[it]] != it
+%constraint forall(it in ITEMS where pre[it] < (n + 1)) (
+%  pre[pre[it]] != it
+%);
+
+% Remove cycles
+constraint forall(it in ITEMS where pre[it] = (n + 1)) (steps_from_origin[it] = 1);
+constraint forall(it in ITEMS where pre[it] <= n)(
+  steps_from_origin[it] = steps_from_origin[pre[it]] + 1
 );
+
+% Make sure the number of steps is consecutive for each courier
+constraint forall(co in COURIERS)(
+  alldifferent([steps_from_origin[it] | it in ITEMS where courier_assignment[it] == co])
+);
+%constraint forall(co in COURIERS)(
+%  max([steps_from_origin[it] | it in ITEMS where courier_assignment[it] == co]) == %length([steps_from_origin[it] | it in ITEMS where courier_assignment[it] == co])
+%);
 
 % Same for sub
 %constraint forall(it in ITEMS where sub[it] < (n + 1)) (
@@ -197,9 +219,15 @@ constraint forall(c1, c2 in COURIERS where (c1 < c2 /\ l[c1] == l[c2])) (
 % Same sub
 %constraint count(sub, (n + 1), m);
 
+% Objective value
+constraint forall(co in COURIERS) (
+  covered_distances[co] = (sum(it in ITEMS where courier_assignment[it] == co) (D[pre[it], it]) + sum(it in ITEMS where count(pre, it, 0) /\ courier_assignment[it] == co) (D[it, (n + 1)]))
+);
+constraint max_dist = max(covered_distances);
+
 % Compute total distance
-constraint total_dist = (sum(it in ITEMS) (D[pre[it], it]) + sum(it in ITEMS where count(pre, it, 0)) (D[it, (n + 1)]));
+%constraint total_dist = (sum(it in ITEMS) (D[pre[it], it]) + sum(it in ITEMS where count(pre, it, 0)) (D[it, (n + 1)]));
 
 solve ::  int_search(pre_dist, smallest, indomain_min)
-      ::  restart_linear(100)
-          minimize total_dist;
+      %::  restart_linear(100)
+          minimize max_dist;
