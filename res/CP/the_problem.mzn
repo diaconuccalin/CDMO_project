@@ -100,12 +100,6 @@ constraint forall(it in ITEMS, co in COURIERS where pre[it] != (n + 1)) (
   courier_assignment[it] == courier_assignment[pre[it]]
 );
 
-% Redundant because of cycle check
-% Precedence can not happen with itself (courier can not remain in the same place)
-% constraint forall(it in ITEMS) (
-%   pre[it] != it
-% );
-
 % Remove cycles
 constraint forall(it in ITEMS where pre[it] = (n + 1)) (steps_from_origin[it] = 1);
 constraint forall(it in ITEMS where pre[it] <= n)(
@@ -114,14 +108,6 @@ constraint forall(it in ITEMS where pre[it] <= n)(
 
 % Count that base appears as many times as the number of used couriers in the precedence array (each courier must leave from origin)
 constraint count(pre, (n + 1), sum([1 | co in COURIERS where sum(row(item_assignment, co)) > 0]));
-
-% At most 1 of each item in pre (0 when last item, so it would be precedent of source location)
-% Redundant because of previous counting and alldifferent_except
-% Yields lower values in some cases (11, 12)
-%array[ITEMS] of int: l_bound = [0 | i in ITEMS];
-%array[ITEMS] of int: r_bound = [1 | i in ITEMS];
-
-%constraint global_cardinality_low_up(pre, ITEMS, l_bound, r_bound);
 
 % Break symmetry for max load
 constraint forall(c1, c2 in COURIERS where (c1 < c2 /\ l[c1] == l[c2])) (
