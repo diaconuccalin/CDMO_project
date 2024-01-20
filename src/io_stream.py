@@ -107,6 +107,11 @@ def output_to_dict(text, experiment_name, time):
         sol = list()
         for i in range(max(courier_assignment)):
             local_sol = list()
+
+            if (i + 1) not in courier_assignment:
+                sol.append(local_sol)
+                continue
+
             current_item = np.argmax(np.logical_and(courier_assignment == (i + 1), pre == max(pre))) + 1
 
             local_sol.append(int(current_item))
