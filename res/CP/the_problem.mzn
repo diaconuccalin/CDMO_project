@@ -34,19 +34,21 @@ array[LOCATIONS, LOCATIONS] of int: D;
 % Courier assignment
 array[ITEMS] of var COURIERS: courier_assignment;
 
+% Variable to store item carried by each courier
+array[COURIERS, ITEMS] of var bool: item_assignment;
+
+
 % Precedence variable (for item ordering)
 % pre[i] = j means that item i gets delivered immediately after item j
 % or that the precedent of item i is j (the direction of the courier is j -> i)
 array[ITEMS] of var LOCATIONS: pre;
 
-% Variable to store item carried by each courier
-array[COURIERS, ITEMS] of var bool: item_assignment;
+% Precedence table (marked with 1 if pre(i) = j, 0 otherwise)
+array[ITEMS, ITEMS] of var bool: pre_table;
 
-% Varaible for distances in the pre array
+% Varaible for distances in the precedence array
 array[ITEMS] of var {dist | dist in D where dist != 0}: pre_dist;
 
-% Precedence table (marked with 1 if pre(i) = j, 0 otherwise)
-array[LOCATIONS, ITEMS] of var bool: pre_table;
 
 % Count the number of steps (not the distance) made by courier from origin to deliver the item
 array[ITEMS] of var ITEMS: steps_from_origin;
@@ -55,7 +57,7 @@ array[ITEMS] of var ITEMS: steps_from_origin;
 % Used to set tighter limits for these values
 array[COURIERS] of var 0..sum([max(row(D, i)) | i in ITEMS]) + (m * max(row(D, n+1))): covered_distances;
 
-% Store the maximum value in the previous array
+% Store the maximum value in the previous array (objective function)
 var 0..sum([max(row(D, i)) | i in ITEMS]) + (m * max(row(D, n+1))): max_dist;
 
 
@@ -92,7 +94,6 @@ constraint forall(it in ITEMS) (
 
 % Since only one item is delivered at a time, there are no 2 items delivered immediately after another one
 % So no 2 items should have the same precedent item, unless coming from origin
-% No time difference for these 2
 constraint alldifferent_except(pre, {n + 1});
 
 % Precedence can only happen between items carried by same courier
@@ -110,12 +111,12 @@ constraint forall(it in ITEMS where pre[it] <= n)(
 constraint count(pre, (n + 1), sum([1 | co in COURIERS where sum(row(item_assignment, co)) > 0]));
 
 % Break symmetry for max load
-constraint forall(c1, c2 in COURIERS where (c1 < c2 /\ l[c1] == l[c2])) (
+constraint symmetry_breaking_constraint(forall(c1, c2 in COURIERS where (c1 < c2 /\ l[c1] == l[c2])) (
   lex_less(row(item_assignment, c1), row(item_assignment, c2))
-);
+));
 
 % Break symmetry for forward/reversed equal distances between locations (good for last 10 tests)
-constraint lex_lesseq(array1d(pre_table), [ pre_table[j,i] | i,j in ITEMS]);
+constraint symmetry_breaking_constraint(lex_lesseq(array1d(pre_table), [ pre_table[j,i] | i,j in ITEMS]));
 
 % Objective value
 constraint forall(co in COURIERS) (
