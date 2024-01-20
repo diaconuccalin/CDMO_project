@@ -1,11 +1,5 @@
-include "alldifferent.mzn";
-include "alldifferent_except.mzn";
-include "count_fn.mzn";
 include "gecode.mzn";
-include "global_cardinality_low_up.mzn";
-include "bin_packing_capa.mzn";
-include "circuit.mzn";
-include "tree.mzn";
+include "globals.mzn";
 
 % Instance parameters
 % Number of couriers
@@ -55,11 +49,11 @@ array[ITEMS] of var {dist | dist in D where dist != 0}: pre_dist;
 % Slows everything down
 array[ITEMS1, ITEMS1] of var bool: pre_table;
 
-array[ITEMS] of var 1..n: steps_from_origin;
+array[ITEMS] of var ITEMS: steps_from_origin;
 
-array[COURIERS] of var 0..sum([max(row(D, i)) | i in 1..n]) + (m * max(row(D, n+1))): covered_distances;
+array[COURIERS] of var 0..sum([max(row(D, i)) | i in ITEMS]) + (m * max(row(D, n+1))): covered_distances;
 
-var 0..sum([max(row(D, i)) | i in 1..n]) + (m * max(row(D, n+1))): max_dist;
+var 0..sum([max(row(D, i)) | i in ITEMS]) + (m * max(row(D, n+1))): max_dist;
 
 % --------------------------------------------------------------------------------------------------------------
 
@@ -67,7 +61,6 @@ var 0..sum([max(row(D, i)) | i in 1..n]) + (m * max(row(D, n+1))): max_dist;
 constraint forall(it in ITEMS) (
   pre_dist[it] = D[pre[it], it]
 );
-
 
 % Another way to respect capacity
 constraint bin_packing_capa(l, courier_assignment, s);
@@ -125,9 +118,8 @@ constraint forall(co in COURIERS)(
   alldifferent([steps_from_origin[it] | it in ITEMS where courier_assignment[it] == co])
 );
 
-% Precedence - count that base appears as many times as the number of couriers
-% (since alldifferent, it will be included exactly once for each of them)
-constraint count(pre, (n + 1), m);
+% Precedence - count that base appears as many times as the number of used couriers in the precedence array
+constraint count(pre, (n + 1), sum([1 | co in COURIERS where sum(row(item_assignment, co)) > 0]));
 
 % At most 1 of each item in pre (0 when last item, so it would be precedent of source location)
 % Yields lower values in some cases (11, 12)
