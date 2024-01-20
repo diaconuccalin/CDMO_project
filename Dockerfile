@@ -10,10 +10,10 @@ WORKDIR /root
 
 # Clone repo
 RUN git clone https://github.com/diaconuccalin/CDMO_project.git
-RUN git switch calin
 
 # cd to project root
 RUN cd CDMO_project/
+RUN git switch calin
 
 # Install python dependencies
 RUN pip3 install -r requirements.txt
