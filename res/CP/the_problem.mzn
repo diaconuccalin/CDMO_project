@@ -1,7 +1,8 @@
 include "gecode.mzn";
 include "globals.mzn";
 
-% Instance parameters
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~ Instance parameters ~~~~~~~~~~~~~~~~~~~~~~~~
 % Number of couriers
 int: m;
 
@@ -11,60 +12,61 @@ int: n;
 % Assert for number of items >= number of couriers - from problem requirements
 constraint assert(n >= m, "Invalid data - less items than couriers.");
 
-% Maximum load for each courier
+% Sets to use for iterations
+set of int: ITEMS = 1..n;
 set of int: COURIERS = 1..m;
+set of int: LOCATIONS = 1..n+1;
+
+% Maximum load for each courier
 array[COURIERS] of int: l;
 
 % Size of each item
-set of int: ITEMS = 1..n;
-set of int: ITEMS1 = 1..n+1;
 array[ITEMS] of int: s;
 
 % Assert for couriers to have the capacity to carry all items
 constraint assert(sum(l) >= sum(s), "Unsolvable - total size of items is larger than total capacity of couriers.");
 
 % Distances
-set of int: LOCATIONS = 1..n+1;
 array[LOCATIONS, LOCATIONS] of int: D;
 
 
-% --------------------------------------------------------------------------------------------------------------
-% Decision variables
+% ~~~~~~~~~~~~~~~~~~~~~~~~ Decision variables ~~~~~~~~~~~~~~~~~~~~~~~~
 % Courier assignment
 array[ITEMS] of var COURIERS: courier_assignment;
 
 % Precedence variable (for item ordering)
 % pre[i] = j means that item i gets delivered immediately after item j
-% or that the precedent of item i is j (j -> i)
-array[ITEMS] of var ITEMS1: pre;
+% or that the precedent of item i is j (the direction of the courier is j -> i)
+array[ITEMS] of var LOCATIONS: pre;
 
 % Variable to store item carried by each courier
 array[COURIERS, ITEMS] of var bool: item_assignment;
 
 % Varaible for distances in the pre array
-%array[ITEMS] of var min(D)..max(D): pre_dist;
 array[ITEMS] of var {dist | dist in D where dist != 0}: pre_dist;
 
 % Precedence table (marked with 1 if pre(i) = j, 0 otherwise)
-% Slows everything down
-array[ITEMS1, ITEMS1] of var bool: pre_table;
+array[LOCATIONS, ITEMS] of var bool: pre_table;
 
+% Count the number of steps (not the distance) made by courier from origin to deliver the item
 array[ITEMS] of var ITEMS: steps_from_origin;
 
+% Array to store the total distances covered by each courier
+% Used to set tighter limits for these values
 array[COURIERS] of var 0..sum([max(row(D, i)) | i in ITEMS]) + (m * max(row(D, n+1))): covered_distances;
 
+% Store the maximum value in the previous array
 var 0..sum([max(row(D, i)) | i in ITEMS]) + (m * max(row(D, n+1))): max_dist;
 
-% --------------------------------------------------------------------------------------------------------------
 
-% Constraints
+% ~~~~~~~~~~~~~~~~~~~~~~~~ Constraints ~~~~~~~~~~~~~~~~~~~~~~~~
+% Mark distances in the corresponding array
 constraint forall(it in ITEMS) (
   pre_dist[it] = D[pre[it], it]
 );
 
-% Another way to respect capacity
+% Make sure the capacity of couriers is enforced
 constraint bin_packing_capa(l, courier_assignment, s);
-
 
 % Item assignment channeling
 % Mark with 1 items carried by courier in item_assignment matrix
@@ -72,7 +74,8 @@ constraint forall(co in COURIERS, it in ITEMS) (
   item_assignment[co, it] <-> (co = courier_assignment[it])
 );
 
-% Mark with 1 in precedence table
+% Complete precedence table
+% Mark with 1 item and its precedent
 constraint forall(it in ITEMS where pre[it] <= n) (
   pre_table[pre[it], it] = 1
 );
@@ -92,20 +95,16 @@ constraint forall(it in ITEMS) (
 % No time difference for these 2
 constraint alldifferent_except(pre, {n + 1});
 
-% Tighter constraint for alldifferent in same courier
-constraint forall(co in COURIERS)(
-  alldifferent([pre[it] | it in ITEMS where courier_assignment[it] == co])
-);
-
 % Precedence can only happen between items carried by same courier
 constraint forall(it in ITEMS, co in COURIERS where pre[it] != (n + 1)) (
   courier_assignment[it] == courier_assignment[pre[it]]
 );
 
+% Redundant because of cycle check
 % Precedence can not happen with itself (courier can not remain in the same place)
-constraint forall(it in ITEMS) (
-  pre[it] != it
-);
+% constraint forall(it in ITEMS) (
+%   pre[it] != it
+% );
 
 % Remove cycles
 constraint forall(it in ITEMS where pre[it] = (n + 1)) (steps_from_origin[it] = 1);
@@ -113,20 +112,16 @@ constraint forall(it in ITEMS where pre[it] <= n)(
   steps_from_origin[it] = steps_from_origin[pre[it]] + 1
 );
 
-% Make sure the number of steps is different for each courier
-constraint forall(co in COURIERS)(
-  alldifferent([steps_from_origin[it] | it in ITEMS where courier_assignment[it] == co])
-);
-
-% Precedence - count that base appears as many times as the number of used couriers in the precedence array
+% Count that base appears as many times as the number of used couriers in the precedence array (each courier must leave from origin)
 constraint count(pre, (n + 1), sum([1 | co in COURIERS where sum(row(item_assignment, co)) > 0]));
 
 % At most 1 of each item in pre (0 when last item, so it would be precedent of source location)
+% Redundant because of previous counting and alldifferent_except
 % Yields lower values in some cases (11, 12)
-array[ITEMS] of int: l_bound = [0 | i in ITEMS];
-array[ITEMS] of int: r_bound = [1 | i in ITEMS];
+%array[ITEMS] of int: l_bound = [0 | i in ITEMS];
+%array[ITEMS] of int: r_bound = [1 | i in ITEMS];
 
-constraint global_cardinality_low_up(pre, ITEMS, l_bound, r_bound);
+%constraint global_cardinality_low_up(pre, ITEMS, l_bound, r_bound);
 
 % Break symmetry for max load
 constraint forall(c1, c2 in COURIERS where (c1 < c2 /\ l[c1] == l[c2])) (
