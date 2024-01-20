@@ -13,7 +13,7 @@ RUN git clone https://github.com/diaconuccalin/CDMO_project.git
 RUN git switch calin
 
 # cd to project root
-cd CDMO_project/
+RUN cd CDMO_project/
 
 # Install python dependencies
 RUN pip3 install -r requirements.txt
