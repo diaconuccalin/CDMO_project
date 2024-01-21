@@ -72,8 +72,11 @@ def create_dzn(problem, file_path):
     return None
 
 
-def output_to_dict(text, experiment_name, time):
+def output_to_dict(text, experiment_name, time, courier_number):
     to_return = dict()
+
+    if text == '':
+        return to_return
 
     if "UNKNOWN" not in text:
         experiment_results = dict()
@@ -105,7 +108,7 @@ def output_to_dict(text, experiment_name, time):
         pre = np.array(pre)
 
         sol = list()
-        for i in range(max(courier_assignment)):
+        for i in range(courier_number):
             local_sol = list()
 
             if (i + 1) not in courier_assignment:
@@ -127,12 +130,33 @@ def output_to_dict(text, experiment_name, time):
     return to_return
 
 
-def write_to_json(output_text, instance_number, experiment_name, time):
-    data = output_to_dict(output_text, experiment_name, time)
+def write_to_json(output_text, instance_number, experiment_name, time, courier_number):
+    # Prepare directories if they don't exist yet
+    if not os.path.exists("res"):
+        os.mkdir("res")
+    if not os.path.exists(os.path.join("res", "CP")):
+        os.mkdir(os.path.join("res", "CP"))
 
+    # Parse data
+    data = output_to_dict(output_text, experiment_name, time, courier_number)
+
+    # Prepare json path
     if isinstance(instance_number, int):
-        with open(os.path.join("jsons", "CP", "%02d.json" % instance_number), "w") as f:
-            json.dump(data, f)
+        json_file_path = os.path.join("res", "CP", "%02d.json" % instance_number)
     else:
-        with open(os.path.join("jsons", "CP", instance_number + "json"), "w") as f:
-            json.dump(data, f)
+        json_file_path = os.path.join("res", "CP", instance_number + "json")
+
+    # Read existing data from the json
+    if os.path.exists(json_file_path):
+        with open(json_file_path, "r") as f:
+            loaded_data = json.load(f)
+    else:
+        loaded_data = dict()
+
+    # Add current results
+    for key in data.keys():
+        loaded_data[key] = data[key]
+
+    # Write the new, completed data
+    with open(json_file_path, "w") as f:
+        json.dump(loaded_data, f, indent=4)

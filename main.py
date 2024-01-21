@@ -3,23 +3,39 @@ import subprocess
 import sys
 import time
 
-from src.io_stream import write_to_json
+from src.io_utils import write_to_json
 
 
 def run_instance(data_path):
+    # Start timer
+    time_started = time.time()
+
+    # Open process
     p = subprocess.Popen(
-        ['minizinc', '--solver', 'gecode', './res/CP/the_problem.mzn', data_path, "--time-limit", "20000"],
+        [
+            'minizinc',
+            '--solver', 'gecode',
+            os.path.join('.', "src", "CP", "the_problem.mzn"),
+            data_path,
+            "--time-limit", "20000"],
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
     )
 
-    time_started = time.time()
+    # Wait for execution to finish and get output
     output, _ = p.communicate()
+
+    # Stop timer
     time_delta = time.time() - time_started
 
-    return output, time_delta
+    # Extract the number of couriers
+    with open(data_path, "r") as f:
+        content = f.readlines()
+    courier_number = int(content[0][4:-2])
+
+    return output, time_delta, courier_number
 
 
 def main():
@@ -29,13 +45,7 @@ def main():
     :return: None
     """
 
-    the_dir = "./data/CP/problem_instances"
-
-    max_report = 0
-    for el_2 in os.listdir("reports"):
-        el_2 = int(el_2[6:])
-        if el_2 > max_report:
-            max_report = el_2
+    the_dir = os.path.join('.', "data", "CP", "problem_instances")
 
     instance_number = int(sys.argv[1])
 
@@ -43,14 +53,14 @@ def main():
         for el in os.listdir(the_dir):
             print("Working on ", el)
             data_path = os.path.join(the_dir, el)
-            output, time_delta = run_instance(data_path)
+            output, time_delta, courier_number = run_instance(data_path)
             inst_n = el[-6:-3]
-            write_to_json(output, inst_n, str(max_report + 1), time_delta)
+            write_to_json(output, inst_n, "experiment_name", time_delta, courier_number)
     else:
         print("Working on instance ", instance_number)
         data_path = os.path.join(the_dir, "inst%02d.dzn" % (instance_number, ))
-        output, time_delta = run_instance(data_path)
-        write_to_json(output, instance_number, str(max_report + 1), time_delta)
+        output, time_delta, courier_number = run_instance(data_path)
+        write_to_json(output, instance_number, "experiment_name", time_delta, courier_number)
 
     return None
 

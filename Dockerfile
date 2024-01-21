@@ -19,4 +19,3 @@ RUN git switch calin
 RUN pip3 install -r requirements.txt
 
 RUN chmod +x main.sh
-RUN mkdir reports
