@@ -18,4 +18,6 @@ RUN git switch calin
 # Install python dependencies
 RUN pip3 install -r requirements.txt
 
+# Add execution rights for the bash script
 RUN chmod +x main.sh
+RUN chmod +x checker.sh
