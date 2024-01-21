@@ -1,8 +1,25 @@
 import os
 import subprocess
+import sys
 import time
 
 from src.io_stream import write_to_json
+
+
+def run_instance(data_path):
+    p = subprocess.Popen(
+        ['minizinc', '--solver', 'gecode', './res/CP/the_problem.mzn', data_path, "--time-limit", "20000"],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
+    time_started = time.time()
+    output, _ = p.communicate()
+    time_delta = time.time() - time_started
+
+    return output, time_delta
 
 
 def main():
@@ -20,30 +37,19 @@ def main():
         if el_2 > max_report:
             max_report = el_2
 
-    with open("reports/report" + str(max_report + 1), "w") as fout:
+    instance_number = int(sys.argv[1])
+
+    if instance_number == 0:
         for el in os.listdir(the_dir):
-            print(el)
+            print("Working on ", el)
             data_path = os.path.join(the_dir, el)
-
-            p = subprocess.Popen(
-                ['minizinc', '--solver', 'gecode', './res/CP/the_problem.mzn', data_path, "--time-limit", "20000"],
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-            )
-
-            time_started = time.time()
-            output, _ = p.communicate()
-            time_delta = time.time() - time_started
-
+            output, time_delta = run_instance(data_path)
             inst_n = el[-6:-3]
-            if "UNKNOWN" in output:
-                fout.write(inst_n + " - R: UNK - T: " + str(time_delta) + "\n")
-            else:
-                fout.write(inst_n + " - R: " + output[output.rfind("dist = ") + len("dist = "):output.rfind(";")] + " - T: " + str(time_delta) + "\n")
-
             write_to_json(output, inst_n, str(max_report + 1), time_delta)
+    else:
+        data_path = os.path.join(the_dir, "inst%02d.dzn" % (instance_number, ))
+        output, time_delta = run_instance(data_path)
+        write_to_json(output, instance_number, str(max_report + 1), time_delta)
 
     return None
 
