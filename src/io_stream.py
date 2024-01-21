@@ -130,5 +130,9 @@ def output_to_dict(text, experiment_name, time):
 def write_to_json(output_text, instance_number, experiment_name, time):
     data = output_to_dict(output_text, experiment_name, time)
 
-    with open(os.path.join("jsons", "CP", str(instance_number + "json")), "w") as f:
-        json.dump(data, f)
+    if isinstance(instance_number, int):
+        with open(os.path.join("jsons", "CP", "%02d.json" % instance_number), "w") as f:
+            json.dump(data, f)
+    else:
+        with open(os.path.join("jsons", "CP", instance_number + "json"), "w") as f:
+            json.dump(data, f)

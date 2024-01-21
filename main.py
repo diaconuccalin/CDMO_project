@@ -47,6 +47,7 @@ def main():
             inst_n = el[-6:-3]
             write_to_json(output, inst_n, str(max_report + 1), time_delta)
     else:
+        print("Working on instance ", instance_number)
         data_path = os.path.join(the_dir, "inst%02d.dzn" % (instance_number, ))
         output, time_delta = run_instance(data_path)
         write_to_json(output, instance_number, str(max_report + 1), time_delta)
