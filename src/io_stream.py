@@ -85,9 +85,9 @@ def output_to_dict(text, experiment_name, time):
 
         # Write optimal bool
         if "==========" in text:
-            experiment_results["optimal"] = "true"
+            experiment_results["optimal"] = True
         else:
-            experiment_results["optimal"] = "false"
+            experiment_results["optimal"] = False
 
         # Write total distance int
         experiment_results["obj"] = int(text[text.rfind("dist = ") + len("dist = "):text.rfind(";")])
