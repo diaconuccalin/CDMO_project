@@ -120,11 +120,11 @@ constraint redundant_constraint(forall(it in ITEMS)(pre[it] != it));
 
 % Redundant constraint: make sure that for all items in courier, the number of steps is different
 constraint redundant_constraint(forall(co in COURIERS)(
-    alldifferent([steps_from_origin[it] | it in ITEMS where courier_assignment[it] == co)
+    alldifferent([steps_from_origin[it] | it in ITEMS where courier_assignment[it] == co])
 ));
 
 % Redundant constraint: check that for each item x, at most one other item has x as previous item
-constraint redundant_constraint(at_most(1, pre, ITEMS));
+constraint redundant_constraint(global_cardinality_low_up(pre, ITEMS, [0 | i in ITEMS], [1 | i in ITEMS]));
 
 % Break symmetry for max load
 constraint symmetry_breaking_constraint(forall(c1, c2 in COURIERS where (c1 < c2 /\ l[c1] == l[c2])) (
