@@ -1,4 +1,4 @@
-include "gecode.mzn";
+% include "gecode.mzn";
 include "globals.mzn";
 
 mzn_ignore_redundant_constraints = true;

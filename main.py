@@ -14,7 +14,7 @@ def run_instance(data_path):
     p = subprocess.Popen(
         [
             'minizinc',
-            '--solver', 'gecode',
+            '--solver', 'chuffed',
             os.path.join('.', "src", "CP", "the_problem.mzn"),
             data_path,
             "--time-limit", "290000",

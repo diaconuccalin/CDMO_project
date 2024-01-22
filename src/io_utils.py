@@ -78,7 +78,7 @@ def output_to_dict(text, experiment_name, time, courier_number):
     if text == '':
         return to_return
 
-    if "UNKNOWN" not in text:
+    if ("UNKNOWN" not in text) and ("ERROR" not in text):
         experiment_results = dict()
 
         # Write time int
