@@ -54,10 +54,10 @@ array[ITEMS] of var ITEMS: steps_from_origin;
 
 % Array to store the total distances covered by each courier
 % Used to set tighter limits for these values
-array[COURIERS] of var 0..sum([max(row(D, i)) | i in ITEMS]) + (m * max(row(D, n+1))): covered_distances;
+array[COURIERS] of var 0..sum([max(row(D, i)) | i in ITEMS]) + (max(row(D, n+1))): covered_distances;
 
 % Store the maximum value in the previous array (objective function)
-var 0..sum([max(row(D, i)) | i in ITEMS]) + (m * max(row(D, n+1))): max_dist;
+var 0..sum([max(row(D, i)) | i in ITEMS]) + (max(row(D, n+1))): max_dist;
 
 
 % ~~~~~~~~~~~~~~~~~~~~~~~~ Constraints ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -88,7 +88,7 @@ constraint forall(it in ITEMS where pre[it] > n) (
 
 % Mark with 0 everything else
 constraint forall(it in ITEMS) (
-  sum(col(pre_table, it)) == 1
+  sum(col(pre_table, it)) = 1
 );
 
 % Since only one item is delivered at a time, there are no 2 items delivered immediately after another one
@@ -97,7 +97,7 @@ constraint alldifferent_except(pre, {n + 1});
 
 % Precedence can only happen between items carried by same courier
 constraint forall(it in ITEMS, co in COURIERS where pre[it] != (n + 1)) (
-  courier_assignment[it] == courier_assignment[pre[it]]
+  courier_assignment[it] = courier_assignment[pre[it]]
 );
 
 % Remove cycles
@@ -110,20 +110,20 @@ constraint forall(it in ITEMS where pre[it] <= n)(
 constraint count(pre, (n + 1), sum([1 | co in COURIERS where sum(row(item_assignment, co)) > 0]));
 
 
-% Redundant constraint: make sure that each item is carried by a single courier
+% Implied constraint: make sure that each item is carried by a single courier
 constraint redundant_constraint(forall(it in ITEMS)(
     sum(co in COURIERS)(item_assignment[co, it]) == 1
 ));
 
-% Redundant constraint: item cannot be precedent of itself (already solved by cycle breaking)
+% Implied constraint: item cannot be precedent of itself (already solved by cycle breaking)
 constraint redundant_constraint(forall(it in ITEMS)(pre[it] != it));
 
-% Redundant constraint: make sure that for all items in courier, the number of steps is different
+% Implied constraint: make sure that for all items in courier, the number of steps is different
 constraint redundant_constraint(forall(co in COURIERS)(
     alldifferent([steps_from_origin[it] | it in ITEMS where courier_assignment[it] == co])
 ));
 
-% Redundant constraint: check that for each item x, at most one other item has x as previous item
+% Implied constraint: check that for each item x, at most one other item has x as previous item
 constraint redundant_constraint(global_cardinality_low_up(pre, ITEMS, [0 | i in ITEMS], [1 | i in ITEMS]));
 
 % Break symmetry for max load
@@ -132,7 +132,7 @@ constraint symmetry_breaking_constraint(forall(c1, c2 in COURIERS where (c1 < c2
 ));
 
 % Break symmetry for forward/reversed equal distances between locations (good for last 10 tests)
-constraint symmetry_breaking_constraint(lex_lesseq(array1d(pre_table), [ pre_table[j,i] | i,j in ITEMS]));
+constraint symmetry_breaking_constraint(lex_lesseq(array1d(pre_table), [pre_table[j,i] | i,j in ITEMS]));
 
 % Objective value
 constraint forall(co in COURIERS) (

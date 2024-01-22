@@ -17,7 +17,9 @@ def run_instance(data_path):
             '--solver', 'gecode',
             os.path.join('.', "src", "CP", "the_problem.mzn"),
             data_path,
-            "--time-limit", "20000"],
+            "--time-limit", "290000",
+            "--random-seed", "42"
+        ],
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
