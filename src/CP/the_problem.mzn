@@ -37,7 +37,6 @@ array[ITEMS] of var COURIERS: courier_assignment;
 % Variable to store item carried by each courier
 array[COURIERS, ITEMS] of var bool: item_assignment;
 
-
 % Precedence variable (for item ordering)
 % pre[i] = j means that item i gets delivered immediately after item j
 % or that the precedent of item i is j (the direction of the courier is j -> i)
@@ -109,6 +108,23 @@ constraint forall(it in ITEMS where pre[it] <= n)(
 
 % Count that base appears as many times as the number of used couriers in the precedence array (each courier must leave from origin)
 constraint count(pre, (n + 1), sum([1 | co in COURIERS where sum(row(item_assignment, co)) > 0]));
+
+
+% Redundant constraint: make sure that each item is carried by a single courier
+constraint redundant_constraint(forall(it in ITEMS)(
+    sum(co in COURIERS)(item_assignment[co, it]) == 1
+));
+
+% Redundant constraint: item cannot be precedent of itself (already solved by cycle breaking)
+constraint redundant_constraint(forall(it in ITEMS)(pre[it] != it));
+
+% Redundant constraint: make sure that for all items in courier, the number of steps is different
+constraint redundant_constraint(forall(co in COURIERS)(
+    alldifferent([steps_from_origin[it] | it in ITEMS where courier_assignment[it] == co)
+));
+
+% Redundant constraint: check that for each item x, at most one other item has x as previous item
+constraint redundant_constraint(at_most(1, pre, ITEMS));
 
 % Break symmetry for max load
 constraint symmetry_breaking_constraint(forall(c1, c2 in COURIERS where (c1 < c2 /\ l[c1] == l[c2])) (
