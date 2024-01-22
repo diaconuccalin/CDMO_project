@@ -1,6 +1,9 @@
 include "gecode.mzn";
 include "globals.mzn";
 
+mzn_ignore_redundant_constraints = true;
+mzn_ignore_symmetry_breaking_constraints = true;
+
 
 % ~~~~~~~~~~~~~~~~~~~~~~~~ Instance parameters ~~~~~~~~~~~~~~~~~~~~~~~~
 % Number of couriers
@@ -140,7 +143,9 @@ constraint forall(co in COURIERS) (
 );
 constraint max_dist = max(covered_distances);
 
-solve ::  int_search(pre_dist, smallest, indomain_split)
-      ::  restart_luby(250)
-      ::  relax_and_reconstruct(pre_dist, 50)
-          minimize max_dist;
+% solve ::  int_search(pre_dist, smallest, indomain_split)
+%       ::  restart_luby(250)
+%       ::  relax_and_reconstruct(pre_dist, 50)
+%           minimize max_dist;
+
+solve minimize max_dist;
