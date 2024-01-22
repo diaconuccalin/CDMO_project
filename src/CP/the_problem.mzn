@@ -1,8 +1,8 @@
-% include "gecode.mzn";
+include "gecode.mzn";
 include "globals.mzn";
 
 mzn_ignore_redundant_constraints = true;
-mzn_ignore_symmetry_breaking_constraints = true;
+mzn_ignore_symmetry_breaking_constraints = false;
 
 
 % ~~~~~~~~~~~~~~~~~~~~~~~~ Instance parameters ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -130,9 +130,9 @@ constraint redundant_constraint(forall(co in COURIERS)(
 constraint redundant_constraint(global_cardinality_low_up(pre, ITEMS, [0 | i in ITEMS], [1 | i in ITEMS]));
 
 % Break symmetry for max load
-constraint symmetry_breaking_constraint(forall(c1, c2 in COURIERS where (c1 < c2 /\ l[c1] == l[c2])) (
-  lex_less(row(item_assignment, c1), row(item_assignment, c2))
-));
+% constraint symmetry_breaking_constraint(forall(c1, c2 in COURIERS where (c1 < c2 /\ l[c1] == l[c2])) (
+%   lex_less(row(item_assignment, c1), row(item_assignment, c2))
+% ));
 
 % Break symmetry for forward/reversed equal distances between locations (good for last 10 tests)
 constraint symmetry_breaking_constraint(lex_lesseq(array1d(pre_table), [pre_table[j,i] | i,j in ITEMS]));
