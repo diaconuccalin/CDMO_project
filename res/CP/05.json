@@ -40,5 +40,19 @@
                 3
             ]
         ]
+    },
+    "redundant_gecode": {
+        "time": 0,
+        "optimal": true,
+        "obj": 206,
+        "sol": [
+            [
+                2
+            ],
+            [
+                1,
+                3
+            ]
+        ]
     }
 }
