@@ -13,6 +13,7 @@ RUN git clone https://github.com/diaconuccalin/CDMO_project.git
 
 # cd to project root
 WORKDIR /home/CDMO_project
+RUN git switch max
 
 # Install python dependencies
 RUN pip3 install -r requirements.txt
