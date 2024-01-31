@@ -1,0 +1,262 @@
+{
+    "baseline_gecode": {
+        "time": 0,
+        "optimal": true,
+        "obj": 12,
+        "sol": [
+            [
+                5,
+                4,
+                2
+            ],
+            [
+                7,
+                3
+            ],
+            [
+                6,
+                1
+            ]
+        ]
+    },
+    "baseline_chuffed": {
+        "time": 0,
+        "optimal": true,
+        "obj": 12,
+        "sol": [
+            [
+                5,
+                4,
+                2
+            ],
+            [
+                6,
+                3
+            ],
+            [
+                1,
+                7
+            ]
+        ]
+    },
+    "baseline_lcg": {
+        "time": 0,
+        "optimal": true,
+        "obj": 12,
+        "sol": [
+            [
+                5,
+                4,
+                2
+            ],
+            [
+                6,
+                3
+            ],
+            [
+                1,
+                7
+            ]
+        ]
+    },
+    "redundant_gecode": {
+        "time": 0,
+        "optimal": true,
+        "obj": 12,
+        "sol": [
+            [
+                5,
+                4,
+                2
+            ],
+            [
+                3,
+                7
+            ],
+            [
+                1,
+                6
+            ]
+        ]
+    },
+    "redundant_chuffed": {
+        "time": 0,
+        "optimal": true,
+        "obj": 12,
+        "sol": [
+            [
+                5,
+                4,
+                2
+            ],
+            [
+                7,
+                3
+            ],
+            [
+                6,
+                1
+            ]
+        ]
+    },
+    "redundant_lcg": {
+        "time": 0,
+        "optimal": true,
+        "obj": 12,
+        "sol": [
+            [
+                5,
+                4,
+                2
+            ],
+            [
+                7,
+                3
+            ],
+            [
+                6,
+                1
+            ]
+        ]
+    },
+    "int_search_gecode": {
+        "time": 0,
+        "optimal": true,
+        "obj": 12,
+        "sol": [
+            [
+                5,
+                6,
+                3
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                1,
+                7
+            ]
+        ]
+    },
+    "int_search_chuffed": {
+        "time": 1,
+        "optimal": true,
+        "obj": 12,
+        "sol": [
+            [
+                5,
+                4,
+                2
+            ],
+            [
+                3,
+                6
+            ],
+            [
+                1,
+                7
+            ]
+        ]
+    },
+    "restart_gecode": {
+        "time": 173,
+        "optimal": true,
+        "obj": 12,
+        "sol": [
+            [
+                5,
+                4,
+                2
+            ],
+            [
+                6,
+                3
+            ],
+            [
+                1,
+                7
+            ]
+        ]
+    },
+    "restart_chuffed": {
+        "time": 0,
+        "optimal": true,
+        "obj": 12,
+        "sol": [
+            [
+                5,
+                4,
+                2
+            ],
+            [
+                3,
+                6
+            ],
+            [
+                1,
+                7
+            ]
+        ]
+    },
+    "lns_chuffed": {
+        "time": 0,
+        "optimal": true,
+        "obj": 12,
+        "sol": [
+            [
+                5,
+                4,
+                2
+            ],
+            [
+                6,
+                3
+            ],
+            [
+                7,
+                1
+            ]
+        ]
+    },
+    "all_without_s2_gecode": {
+        "time": 300,
+        "optimal": false,
+        "obj": 12,
+        "sol": [
+            [
+                5,
+                6,
+                3
+            ],
+            [
+                2,
+                4
+            ],
+            [
+                1,
+                7
+            ]
+        ]
+    },
+    "all_without_s2_chuffed": {
+        "time": 0,
+        "optimal": true,
+        "obj": 12,
+        "sol": [
+            [
+                5,
+                4,
+                2
+            ],
+            [
+                7,
+                3
+            ],
+            [
+                6,
+                1
+            ]
+        ]
+    }
+}
