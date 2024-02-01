@@ -86,6 +86,26 @@ def initialize_routes(initial_routes, m, x):
             x[i, movement[0], movement[1]].start = 1
 
 
+def order_routes(route_list):
+    ordered_routes = []
+    first_transfer = max(route_list, key=lambda x: x[0])
+
+    # Remove the first_transfer from the original list
+    route_list.remove(first_transfer)
+
+    # Set first_transfer as first instance of the list
+    route_list.insert(0, first_transfer)
+
+    while route_list:
+        for i, route in enumerate(route_list):
+            # Checks that final destination and starting destination are the same
+            if not ordered_routes or route[0] == ordered_routes[-1][1]:
+                ordered_routes.append(route)
+                del route_list[i]
+                break
+    return ordered_routes
+
+
 def main_mip(instance):
     # Setting Parameters to access Gurobi environment
     params = {
@@ -112,7 +132,8 @@ def main_mip(instance):
             for k in range(n + 1):
                 x[i, j, k] = model.addVar(vtype=GRB.BINARY, name=f"x_{i}_{j}_{k}")
 
-    heuristic = False
+    # Turn on/off whether the model uses a heuristic based warm start
+    heuristic = True
     if heuristic:
         # Warm starts initial solution using nearest neighbor heuristic
         initial_routes = nearest_neighbor_heuristic(Di_j, m, n, sj, li)
@@ -187,37 +208,42 @@ def main_mip(instance):
     # Print the solution and prepares data for the JSON file
     if model.status == GRB.OPTIMAL:
         is_optimal = True
-        paths = []
+        routes = []
         print("\nOptimal solution found:")
         for i in range(m):
-            courier_path = []
             route = []
             for j in range(n + 1):
                 for k in range(n + 1):
                     if x[i, j, k].x > 0.5:
                         route.append((j + 1, k + 1))
-                        if k + 1 != n + 1:
-                            courier_path.append(k + 1)
-            paths.append(courier_path)
             print(f"Courier {i + 1}: {route}")
+            routes.append(route)
         print("\nTotal distance:", model.objVal)
         result = model.objVal
     else:
         is_optimal = False
         time = 300
-        paths = []
         result = 0
+        routes = []
         if model.objVal <= 10000:
             for i in range(m):
-                courier_path = []
+                route = []
                 for j in range(n + 1):
                     for k in range(n + 1):
                         if x[i, j, k].x > 0.5:
-                            if k + 1 != n + 1:
-                                courier_path.append(k + 1)
-                paths.append(courier_path)
+                            route.append((j + 1, k + 1))
+                print(f"Courier {i + 1}: {route}")
+                routes.append(route)
             result = model.objVal
         print("No solution found.")
+
+    paths = []
+    for route in routes:
+        ordered_destinations = order_routes(route)
+        path = []
+        for r in ordered_destinations[:-1]:
+            path.append(r[1])
+        paths.append(path)
 
     # Prepare directories if they don't exist yet
     if not os.path.exists("res"):
@@ -226,7 +252,7 @@ def main_mip(instance):
         os.mkdir(os.path.join("res", "MIP"))
 
     # Prepare json path
-    json_file_path = os.path.join("res", "MIP", str(instance) + ".json")
+    json_file_path = os.path.join("res", "MIP", "%02d" % (instance, ) + ".json")
 
     # Read existing data from the json
     if os.path.exists(json_file_path):
@@ -247,9 +273,6 @@ def main_mip(instance):
 
     for key in data.keys():
         loaded_data[key] = data[key]
-
-    # # Sets the file name depending on instance number
-    # file_name = "{0}.json".format(instance)
 
     # Creates JSON file with associated data
     with open(json_file_path, "w") as json_file:
