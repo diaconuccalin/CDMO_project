@@ -1,4 +1,3 @@
-from solve_utils import *
 import time
 
 from src.SAT.math_utils import *
