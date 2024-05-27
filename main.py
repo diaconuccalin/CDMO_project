@@ -140,23 +140,23 @@ def main():
 
         if instance_number == 0:
             for el in os.listdir(the_dir):
-                print("Working on ", el)
+                print("Working on", el)
                 data_path = os.path.join(the_dir, el)
                 output, time_delta, courier_number = run_cp_instance(data_path)
-                parsed_output = output_to_dict_cp(output, experiment_name, time, courier_number)
+                parsed_output = output_to_dict_cp(output, experiment_name, time_delta, courier_number)
                 inst_n = el[-6:-3]
                 write_to_json(parsed_output, inst_n, method_name)
         else:
-            print("Working on instance ", instance_number)
+            print("Working on instance", instance_number)
             data_path = os.path.join(the_dir, "inst%02d.dzn" % (instance_number, ))
             output, time_delta, courier_number = run_cp_instance(data_path)
-            parsed_output = output_to_dict_cp(output, experiment_name, time, courier_number)
+            parsed_output = output_to_dict_cp(output, experiment_name, time_delta, courier_number)
             write_to_json(parsed_output, instance_number, method_name)
 
     if method_name == "SAT":
         if instance_number == 0:
             for el in os.listdir(the_dir):
-                print("Working on ", el)
+                print("Working on", el)
                 sat_solution = dict()
                 data_path = os.path.join(the_dir, el)
                 solution = run_sat_instance(data_path)
@@ -165,7 +165,7 @@ def main():
                     inst_n = el[-6:-3]
                     write_to_json(sat_solution, inst_n, method_name)
         else:
-            print("Working on instance ", instance_number)
+            print("Working on instance", instance_number)
             sat_solution = dict()
             data_path = os.path.join(the_dir, "inst%02d.dat" % (instance_number, ))
             solution = run_sat_instance(data_path)
@@ -176,10 +176,10 @@ def main():
     if method_name == "MIP":
         if instance_number == 0:
             for i in range(1, 22):
-                print("Working on instance ", i)
+                print("Working on instance", i)
                 main_mip(i)
         else:
-            print("Working on instance ", instance_number)
+            print("Working on instance", instance_number)
             main_mip(instance_number)
 
     return None
