@@ -72,7 +72,7 @@ def create_dzn(problem, file_path):
     return None
 
 
-def output_to_dict(text, experiment_name, time, courier_number):
+def output_to_dict_cp(text, experiment_name, time, courier_number):
     to_return = dict()
 
     if text == '':
@@ -130,21 +130,18 @@ def output_to_dict(text, experiment_name, time, courier_number):
     return to_return
 
 
-def write_to_json(output_text, instance_number, experiment_name, time, courier_number):
+def write_to_json(data, instance_number, model_type):
     # Prepare directories if they don't exist yet
     if not os.path.exists("res"):
         os.mkdir("res")
-    if not os.path.exists(os.path.join("res", "CP")):
-        os.mkdir(os.path.join("res", "CP"))
-
-    # Parse data
-    data = output_to_dict(output_text, experiment_name, time, courier_number)
+    if not os.path.exists(os.path.join("res", model_type)):
+        os.mkdir(os.path.join("res", model_type))
 
     # Prepare json path
     if isinstance(instance_number, int):
-        json_file_path = os.path.join("res", "CP", "%02d.json" % instance_number)
+        json_file_path = os.path.join("res", model_type, "%02d.json" % instance_number)
     else:
-        json_file_path = os.path.join("res", "CP", instance_number + "json")
+        json_file_path = os.path.join("res", model_type, instance_number + "json")
 
     # Read existing data from the json
     if os.path.exists(json_file_path):
