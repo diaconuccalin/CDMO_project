@@ -3,6 +3,7 @@ import time
 from src.SAT.math_utils import *
 from src.SAT.solve_utils import *
 
+from math import floor
 from z3 import *
 
 
@@ -87,7 +88,7 @@ def solve_sat(
 
         for item in ITEMS:
             if (time.time() - start_time) > (constraint_adding_timeout / 1000):
-                result_dict["elapsed_time"] = ceil(elapsed_time)
+                result_dict["elapsed_time"] = floor(elapsed_time)
                 return result_dict, instance
 
             # Transform from integer to array of booleans (base 10 to base 2)
@@ -136,7 +137,7 @@ def solve_sat(
         ))
 
         if (time.time() - start_time) > (constraint_adding_timeout / 1000):
-            result_dict["elapsed_time"] = ceil(elapsed_time)
+            result_dict["elapsed_time"] = floor(elapsed_time)
             return result_dict, instance
 
         # Compute total distance
@@ -150,7 +151,7 @@ def solve_sat(
         ))
 
         if (time.time() - start_time) > (constraint_adding_timeout / 1000):
-            result_dict["elapsed_time"] = ceil(elapsed_time)
+            result_dict["elapsed_time"] = floor(elapsed_time)
             return result_dict, instance
 
         # Update max dist
@@ -165,7 +166,7 @@ def solve_sat(
 
     for it1 in ITEMS:
         if (time.time() - start_time) > (constraint_adding_timeout / 1000):
-            result_dict["elapsed_time"] = ceil(elapsed_time)
+            result_dict["elapsed_time"] = floor(elapsed_time)
             return result_dict, instance
 
         # [No improvement] Add upper domain boundary for steps_from_origin
@@ -287,5 +288,5 @@ def solve_sat(
             elapsed_time = initial_solving_timeout
             break
 
-    result_dict["elapsed_time"] = ceil(elapsed_time)
+    result_dict["elapsed_time"] = floor(elapsed_time)
     return result_dict, instance
