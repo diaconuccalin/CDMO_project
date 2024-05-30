@@ -255,7 +255,7 @@ def main_smt(instance):
         os.mkdir(os.path.join("res", "SMT"))
 
     # Prepare json path
-    json_file_path = os.path.join("res", "SMT", instance + ".json")
+    json_file_path = os.path.join("res", "SMT", "%02d.json" % (instance, ))
 
     # Read existing data from the json
     if os.path.exists(json_file_path):
