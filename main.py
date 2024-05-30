@@ -6,6 +6,7 @@ import time
 from math import floor
 
 from src.SAT.sat_model import solve_sat
+from src.SMT.SMT import main_smt
 from src.io_utils import write_to_json, output_to_dict_cp, read_input_file
 from src.MIP.main_mip import main_mip
 
@@ -172,6 +173,15 @@ def main():
             if solution is not None:
                 sat_solution[experiment_name] = solution
                 write_to_json(sat_solution, instance_number, method_name)
+
+    if method_name == "SMT":
+        if instance_number == 0:
+            for i in range(1, 22):
+                print("Working on instance", i)
+                main_smt(i)
+        else:
+            print("Working on instance", instance_number)
+            main_smt(instance_number)
 
     if method_name == "MIP":
         if instance_number == 0:
