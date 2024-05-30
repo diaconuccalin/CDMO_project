@@ -228,7 +228,7 @@ def order_routes(route_list):
 
 
 def main_smt(instance):
-    m, n, li, sj, Di_j = import_data("Instances/inst%02d.dat".format(instance))
+    m, n, li, sj, Di_j = import_data("data/problem_instances/inst%02d.dat" % (instance, ))
 
     # Solve instance
     result_dict = solve_sat(
